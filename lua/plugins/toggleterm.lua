@@ -1,0 +1,15 @@
+return {
+  "akinsho/toggleterm.nvim",
+  version = "*",
+  opts = {
+    size = 15, -- Default terminal height
+    open_mapping = [[<leader>t]], -- Press <leader>tt to open
+    shade_terminals = true,
+    direction = "float", -- Options: "horizontal", "vertical", "float"
+    float_opts = {
+      border = "rounded", -- Rounded window border
+      width = 120,
+      height = 40,
+    },
+  },
+}
