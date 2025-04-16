@@ -4,5 +4,9 @@
 
 local map = vim.keymap.set
 
-map("n", "<leader>t", ":ToggleTerm direction=float<CR>", { desc = "Terminal floating" })
-map("n", "-", "<CMD>Oil<CR>", { desc = "Open Oil file explorer" })
+map("n", "<leader>t", ":ToggleTerm direction=float<CR>", {
+  desc = "Terminal floating",
+})
+map("n", "-", "<CMD>Oil<CR>", {
+  desc = "Open Oil file explorer",
+})
