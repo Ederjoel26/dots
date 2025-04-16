@@ -19,6 +19,7 @@ Welcome to my NeoVim setup! Below is a quick overview of the plugins I use, alon
   Great for managing buffers.  
   - `vH` to mark a file  
   - `vh` to open the buffer list  
+  - ThePrimeagen truly the GOAT
 
 - **Neo-tree**  
   I don’t use it often, but it’s useful to visualize the project structure when needed.
