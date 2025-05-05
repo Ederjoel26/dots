@@ -9,7 +9,6 @@ return {
     direction = "float", -- Options: "horizontal", "vertical", "float"
     shell = "pwsh.exe",
     float_opts = {
-      border = "rounded", -- Rounded window border
       width = 120,
       height = 40,
     },

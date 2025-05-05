@@ -1,4 +1,4 @@
 return {
-  "akinsho/bufferline.nvim",
+  "Exafunction/codeium.nvim",
   enabled = false,
 }

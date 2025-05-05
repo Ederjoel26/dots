@@ -7,6 +7,8 @@ return {
       "shellcheck",
       "shfmt",
       "flake8",
+      "nginx-config-formatter",
+      "ts-standard",
     },
   },
 }

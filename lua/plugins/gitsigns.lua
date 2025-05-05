@@ -1,4 +1,4 @@
 return {
-  "akinsho/bufferline.nvim",
+  "lewis6991/gitsigns.nvim",
   enabled = false,
 }
