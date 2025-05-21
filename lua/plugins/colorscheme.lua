@@ -1,9 +1,10 @@
 return {
-  { "vague2k/vague.nvim" },
   {
-    "LazyVim/LazyVim",
-    opts = {
-      colorscheme = "vague",
-    },
+    "vague2k/vague.nvim",
+    lazy = false,
+    priority = 1000,
+    config = function()
+      vim.cmd("colorscheme vague")
+    end,
   },
 }
