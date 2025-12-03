@@ -1,0 +1,112 @@
+# This is the configuration file for Ghostty.
+#
+# This template file has been automatically created at the following
+# path since Ghostty couldn't find any existing config files on your system:
+#
+#   /home/eddy/.config/ghostty/config
+#
+# The template does not set any default options, since Ghostty ships
+# with sensible defaults for all options. Users should only need to set
+# options that they want to change from the default.
+#
+# Run `ghostty +show-config --default --docs` to view a list of
+# all available config options and their default values.
+#
+# Additionally, each config option is also explained in detail
+# on Ghostty's website, at https://ghostty.org/docs/config.
+#
+# Ghostty can reload the configuration while running by using the menu
+# options or the bound key (default: Command + Shift + comma on macOS and
+# Control + Shift + comma on other platforms). Not all config options can be
+# reloaded while running; some only apply to new windows and others may require
+# a full restart to take effect.
+
+# Config syntax crash course
+# ==========================
+# # The config file consists of simple key-value pairs,
+# # separated by equals signs.
+# font-family = Iosevka
+# window-padding-x = 2
+#
+# # Spacing around the equals sign does not matter.
+# # All of these are identical:
+# key=value
+# key= value
+# key =value
+# key = value
+#
+# # Any line beginning with a # is a comment. It's not possible to put
+# # a comment after a config option, since it would be interpreted as a
+# # part of the value. For example, this will have a value of "#123abc":
+# background = #123abc
+#
+# # Empty values are used to reset config keys to default.
+# key =
+#
+# # Some config options have unique syntaxes for their value,
+# # which is explained in the docs for that config option.
+# # Just for example:
+# resize-overlay-duration = 4s 200ms
+
+
+# --- FUENTE ---
+font-family = "JetBrainsMono Nerd Font"
+font-size = 11
+# Ajuste de características de fuente (ligaduras)
+font-feature = calt
+font-feature = liga
+
+# --- ESTÉTICA GENERAL ---
+# Sin barra de título (i3 se encarga de eso)
+window-decoration = false
+# Un poco de margen para que el texto respire
+window-padding-x = 6
+window-padding-y = 6
+# Opacidad: 0.9 permite ver algo del fondo, pero mantiene la oscuridad de Vague
+background-opacity = 0.92
+# Cursor estilo bloque parpadeante
+cursor-style = block
+cursor-style-blink = true
+
+# --- TEMA VAGUE (Custom Palette) ---
+# Fondo oscuro profundo (casi negro con tinte azulado)
+background = #14141d
+foreground = #cdcecf
+
+# Cursor y selección
+cursor-color = #cdcecf
+selection-background = #282e3a
+selection-foreground = #cdcecf
+
+# Paleta de 16 colores (Vague Scheme)
+# Negro / Gris oscuro
+palette = 0=#1e1e28
+palette = 8=#3e424f
+
+# Rojo (Errores) - Desaturado
+palette = 1=#d2788c
+palette = 9=#d2788c
+
+# Verde (Strings/Éxito) - Grisaceo
+palette = 2=#8ca094
+palette = 10=#8ca094
+
+# Amarillo (Warnings) - Arena
+palette = 3=#e8c88c
+palette = 11=#e8c88c
+
+# Azul (Funciones) - Pastel
+palette = 4=#8ca0c8
+palette = 12=#8ca0c8
+
+# Magenta / Púrpura (Keywords) - ESTE ES CLAVE PARA TU SETUP
+palette = 5=#c099db
+palette = 13=#c099db
+
+# Cyan
+palette = 6=#8cb6c0
+palette = 14=#8cb6c0
+
+# Blanco
+palette = 7=#c5c5c5
+palette = 15=#e6e6e8
