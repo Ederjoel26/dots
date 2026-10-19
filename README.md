@@ -5,7 +5,7 @@ My personal dotfiles for Linux.
 | Directory | What it is |
 | --- | --- |
 | [`nvim/`](nvim/) | Minimal, performance-first Neovim config. See [nvim/README.md](nvim/README.md). |
-| [`ghostty/`](ghostty/) | [Ghostty](https://ghostty.org) terminal config: JetBrainsMono Nerd Font 11pt, dark palette, 92% opacity, no window decorations. |
+| [`ghostty/`](ghostty/) | [Ghostty](https://ghostty.org) terminal config: JetBrainsMono Nerd Font 11pt, GitHub dark palette (matches the Neovim theme), no window decorations. |
 | [`.tmux.conf`](.tmux.conf) | tmux config: `C-a` prefix, `\|`/`-` splits, `hjkl` resize, vi copy mode to the system clipboard (`xclip`), seamless `C-hjkl` navigation with Neovim, sessions saved and restored with resurrect + continuum. |
 
 ## Install

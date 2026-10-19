@@ -63,50 +63,30 @@ window-decoration = false
 window-padding-x = 6
 window-padding-y = 6
 # Opacidad: 0.9 permite ver algo del fondo, pero mantiene la oscuridad de Vague
-background-opacity = 0.92
+# background-opacity = 0.92
 # Cursor estilo bloque parpadeante
 cursor-style = block
 cursor-style-blink = true
 
-# --- TEMA VAGUE (Custom Palette) ---
-# Fondo oscuro profundo (casi negro con tinte azulado)
-background = #14141d
-foreground = #cdcecf
-
-# Cursor y selección
-cursor-color = #cdcecf
-selection-background = #282e3a
-selection-foreground = #cdcecf
-
-# Paleta de 16 colores (Vague Scheme)
-# Negro / Gris oscuro
-palette = 0=#1e1e28
-palette = 8=#3e424f
-
-# Rojo (Errores) - Desaturado
-palette = 1=#d2788c
-palette = 9=#d2788c
-
-# Verde (Strings/Éxito) - Grisaceo
-palette = 2=#8ca094
-palette = 10=#8ca094
-
-# Amarillo (Warnings) - Arena
-palette = 3=#e8c88c
-palette = 11=#e8c88c
-
-# Azul (Funciones) - Pastel
-palette = 4=#8ca0c8
-palette = 12=#8ca0c8
-
-# Magenta / Púrpura (Keywords) - ESTE ES CLAVE PARA TU SETUP
-palette = 5=#c099db
-palette = 13=#c099db
-
-# Cyan
-palette = 6=#8cb6c0
-palette = 14=#8cb6c0
-
-# Blanco
-palette = 7=#c5c5c5
-palette = 15=#e6e6e8
+background = #010409
+foreground = #e6edf3
+selection-background = #264f78
+selection-foreground = #e6edf3
+cursor-color = #e6edf3
+cursor-text = #010409
+palette = 0=#484f58
+palette = 1=#ff7b72
+palette = 2=#3fb950
+palette = 3=#d29922
+palette = 4=#58a6ff
+palette = 5=#bc8cff
+palette = 6=#39c5cf
+palette = 7=#b1bac4
+palette = 8=#6e7681
+palette = 9=#ffa198
+palette = 10=#56d364
+palette = 11=#e3b341
+palette = 12=#79c0ff
+palette = 13=#d2a8ff
+palette = 14=#56d4dd
+palette = 15=#ffffff
