@@ -6,6 +6,7 @@ My personal dotfiles for Linux.
 | --- | --- |
 | [`nvim/`](nvim/) | Minimal, performance-first Neovim config. See [nvim/README.md](nvim/README.md). |
 | [`ghostty/`](ghostty/) | [Ghostty](https://ghostty.org) terminal config: JetBrainsMono Nerd Font 11pt, dark palette, 92% opacity, no window decorations. |
+| [`.tmux.conf`](.tmux.conf) | tmux config: `C-a` prefix, `\|`/`-` splits, `hjkl` resize, vi copy mode to the system clipboard (`xclip`), seamless `C-hjkl` navigation with Neovim, sessions saved and restored with resurrect + continuum. |
 
 ## Install
 
@@ -20,6 +21,14 @@ Ghostty (install Ghostty itself first, see https://ghostty.org/docs/install):
 ```bash
 mkdir -p ~/.config/ghostty
 ln -sf ~/dots/ghostty/config ~/.config/ghostty/config
+```
+
+tmux (the Neovim installer already installs `tmux` and `xclip`):
+
+```bash
+ln -sf ~/dots/.tmux.conf ~/.tmux.conf
+git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+tmux   # then press C-a I to install the plugins
 ```
 
 ## License
