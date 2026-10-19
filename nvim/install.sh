@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# One-command installer for this Neovim config on Linux.
+# One-command installer for these dotfiles (Neovim, tmux, Ghostty) on Linux
+# and macOS. Windows: use install.ps1.
 #
 #   curl -fsSL https://raw.githubusercontent.com/Ederjoel26/dots/main/nvim/install.sh | bash
 #
-# Distro packages are only used for the few things Homebrew itself needs
-# (compiler, git, curl...). Everything else comes from Homebrew so versions
-# are recent and identical on every distro.
+# Everything comes from Homebrew so versions are recent and identical on every
+# system. On Linux, distro packages are only used for the few things Homebrew
+# itself needs (compiler, git, curl...).
 #
 # Overridable env vars: REPO_URL, DOTS_DIR, SKIP_FONT=1, SKIP_OPTIONAL=1
 set -euo pipefail
@@ -14,7 +15,7 @@ REPO_URL="${REPO_URL:-https://github.com/Ederjoel26/dots.git}"
 DOTS_DIR="${DOTS_DIR:-$HOME/dots}"
 NVIM_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
 FONT_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/fonts/JetBrainsMonoNerdFont"
-BREW_PREFIX=/home/linuxbrew/.linuxbrew
+OS="$(uname -s)"
 
 # Required: Neovim + everything plugins and Mason need to work.
 BREW_REQUIRED=(neovim ripgrep fd fzf lazygit node go python)
@@ -25,13 +26,18 @@ info() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33mwarn:\033[0m %s\n' "$*" >&2; }
 die() { printf '\033[1;31merror:\033[0m %s\n' "$*" >&2; exit 1; }
 
-[ "$(uname -s)" = Linux ] || die "This installer only supports Linux."
+case "$OS" in
+  Linux | Darwin) ;;
+  *) die "Unsupported system: $OS. On Windows use install.ps1." ;;
+esac
 [ "$(id -u)" -ne 0 ] || die "Run as your normal user, not root (Homebrew refuses root). sudo is used when needed."
 
 sudo_() { if command -v sudo >/dev/null; then sudo "$@"; else die "sudo is required to install: $*"; fi; }
 
 # 1. System prerequisites (only what Homebrew needs to install itself) -------
 install_system_deps() {
+  # macOS: the Homebrew installer sets up the Xcode Command Line Tools itself.
+  [ "$OS" = Linux ] || return 0
   info "Installing system prerequisites for Homebrew"
   local base clip=(xclip wl-clipboard)
   if command -v apt-get >/dev/null; then
@@ -57,19 +63,31 @@ install_system_deps() {
 }
 
 # 2. Homebrew ----------------------------------------------------------------
+find_brew() {
+  local b
+  for b in "$(command -v brew || true)" /opt/homebrew/bin/brew /usr/local/bin/brew \
+    /home/linuxbrew/.linuxbrew/bin/brew; do
+    [ -n "$b" ] && [ -x "$b" ] && { echo "$b"; return; }
+  done
+}
+
 install_brew() {
-  if ! command -v brew >/dev/null && [ ! -x "$BREW_PREFIX/bin/brew" ]; then
+  if [ -z "$(find_brew)" ]; then
     info "Installing Homebrew"
+    # Cache sudo now: the non-interactive Homebrew installer can't prompt.
+    sudo_ -v
     NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   fi
   local brew_bin
-  brew_bin="$(command -v brew || echo "$BREW_PREFIX/bin/brew")"
+  brew_bin="$(find_brew)"
+  [ -n "$brew_bin" ] || die "Homebrew installation failed"
   eval "$("$brew_bin" shellenv)"
 
-  # Make brew available in future shells.
+  # Make brew available in future shells (zsh is the macOS default).
   local line="eval \"\$($brew_bin shellenv)\"" rc
+  local shell_rc="$HOME/.$(basename "${SHELL:-bash}")rc"
   for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
-    if [ -f "$rc" ] || [ "$rc" = "$HOME/.bashrc" ]; then
+    if [ -f "$rc" ] || [ "$rc" = "$shell_rc" ]; then
       grep -qsF "$line" "$rc" || printf '\n%s\n' "$line" >>"$rc"
     fi
   done
@@ -89,11 +107,21 @@ install_brew_packages() {
     info "Installing optional: $pkg"
     brew install --quiet "$pkg" || warn "Could not install $pkg (only its integration is affected)"
   done
+  # Ghostty only has a Homebrew package on macOS.
+  if [ "$OS" = Darwin ] && [ ! -d /Applications/Ghostty.app ]; then
+    info "Installing optional: Ghostty"
+    brew install --quiet --cask ghostty || warn "Could not install Ghostty"
+  fi
 }
 
 # 3. Nerd Font ---------------------------------------------------------------
 install_font() {
   [ "${SKIP_FONT:-0}" = 1 ] && return
+  if [ "$OS" = Darwin ]; then
+    info "Installing JetBrainsMono Nerd Font"
+    brew install --quiet --cask font-jetbrains-mono-nerd-font || warn "Font install failed, install a Nerd Font manually"
+    return 0
+  fi
   if command -v fc-list >/dev/null && fc-list | grep -i "JetBrainsMono.*Nerd" >/dev/null; then
     info "JetBrainsMono Nerd Font already installed"
     return
@@ -101,17 +129,35 @@ install_font() {
   info "Installing JetBrainsMono Nerd Font"
   mkdir -p "$FONT_DIR"
   curl -fsSL https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.tar.xz |
-    tar -xJ -C "$FONT_DIR" || { warn "Font download failed, install a Nerd Font manually"; return; }
-  command -v fc-cache >/dev/null && fc-cache -f "$FONT_DIR" >/dev/null
+    tar -xJ -C "$FONT_DIR" || { warn "Font download failed, install a Nerd Font manually"; return 0; }
+  if command -v fc-cache >/dev/null; then fc-cache -f "$FONT_DIR" >/dev/null; fi
 }
 
 # 4. Config ------------------------------------------------------------------
+# link SRC DEST: symlink DEST to SRC, backing up whatever was at DEST.
+link() {
+  local src="$1" dest="$2"
+  if [ "$(readlink -f "$dest" 2>/dev/null)" = "$src" ]; then
+    info "$dest already points to $src"
+    return
+  fi
+  if [ -e "$dest" ] || [ -L "$dest" ]; then
+    local backup
+    backup="$dest.bak.$(date +%Y%m%d%H%M%S)"
+    warn "Existing $dest moved to $backup"
+    mv "$dest" "$backup"
+  fi
+  mkdir -p "$(dirname "$dest")"
+  ln -s "$src" "$dest"
+  info "Linked $dest -> $src"
+}
+
 install_config() {
-  local src
+  local dots
   # Running from a local checkout (./install.sh)? Use it. Piped from curl? Clone.
   if [ -n "${BASH_SOURCE[0]:-}" ] && [ -f "${BASH_SOURCE[0]}" ] &&
     [ -f "$(dirname "${BASH_SOURCE[0]}")/init.lua" ]; then
-    src="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    dots="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
   else
     if [ -d "$DOTS_DIR/.git" ]; then
       info "Updating $DOTS_DIR"
@@ -120,22 +166,26 @@ install_config() {
       info "Cloning $REPO_URL into $DOTS_DIR"
       git clone --depth 1 "$REPO_URL" "$DOTS_DIR"
     fi
-    src="$DOTS_DIR/nvim"
+    dots="$(cd "$DOTS_DIR" && pwd -P)"
   fi
 
-  if [ "$(readlink -f "$NVIM_DIR" 2>/dev/null)" = "$src" ]; then
-    info "$NVIM_DIR already points to $src"
-    return
+  link "$dots/nvim" "$NVIM_DIR"
+  link "$dots/.tmux.conf" "$HOME/.tmux.conf"
+  # Ghostty reads ~/.config/ghostty/config on macOS too.
+  link "$dots/ghostty/config" "${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config"
+}
+
+# tmux plugins (tpm). Without tpm, tmux shows an error on every start.
+setup_tmux() {
+  command -v tmux >/dev/null || return 0
+  local tpm="$HOME/.tmux/plugins/tpm"
+  if [ ! -d "$tpm" ]; then
+    info "Installing tmux plugin manager (tpm)"
+    git clone --depth 1 https://github.com/tmux-plugins/tpm "$tpm" ||
+      { warn "Could not clone tpm"; return 0; }
   fi
-  if [ -e "$NVIM_DIR" ] || [ -L "$NVIM_DIR" ]; then
-    local backup
-    backup="$NVIM_DIR.bak.$(date +%Y%m%d%H%M%S)"
-    warn "Existing config moved to $backup"
-    mv "$NVIM_DIR" "$backup"
-  fi
-  mkdir -p "$(dirname "$NVIM_DIR")"
-  ln -s "$src" "$NVIM_DIR"
-  info "Linked $NVIM_DIR -> $src"
+  info "Installing tmux plugins"
+  "$tpm/bin/install_plugins" >/dev/null || warn "tmux plugins not installed, press C-a I inside tmux"
 }
 
 # 5. Plugins, parsers, LSP servers (headless, so first launch is clean) -----
@@ -157,6 +207,7 @@ install_brew
 install_brew_packages
 install_font
 install_config
+setup_tmux
 bootstrap_nvim
 
 echo
