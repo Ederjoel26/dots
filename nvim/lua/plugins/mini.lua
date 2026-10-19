@@ -1,6 +1,7 @@
 return {
 	{
 		"echasnovski/mini.nvim",
+		event = "VeryLazy",
 		config = function()
 			-- Better Around/Inside textobjects
 			--
@@ -16,6 +17,17 @@ return {
 			-- - sd'   - [S]urround [D]elete [']quotes
 			-- - sr)'  - [S]urround [R]eplace [)] [']
 			require("mini.surround").setup()
+
+			-- Highlight hex colors, CSS vars, etc. (replaces nvim-colorizer)
+			require("mini.hipatterns").setup({
+				highlighters = {
+					-- Highlight hex colors like #ff00ff
+					hex_color = {
+						pattern = "#%x+",
+						async = true,
+					},
+				},
+			})
 		end,
 	},
 }

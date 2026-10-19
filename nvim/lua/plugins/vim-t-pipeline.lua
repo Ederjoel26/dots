@@ -1,1 +1,4 @@
-return { 'vimpostor/vim-tpipeline' }
+return {
+  'vimpostor/vim-tpipeline',
+  event = 'VeryLazy',
+}

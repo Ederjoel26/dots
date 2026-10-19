@@ -148,19 +148,7 @@ return {
         virtual_text = {
           source = 'if_many',
           spacing = 2,
-          format = function(diagnostic)
-            local icons = {
-              [vim.diagnostic.severity.ERROR] = 'Error',
-              [vim.diagnostic.severity.WARN] = 'Warning',
-              [vim.diagnostic.severity.INFO] = 'Info',
-              [vim.diagnostic.severity.HINT] = 'Hint',
-            }
-            return string.format(
-              '%s: %s',
-              icons[diagnostic.severity],
-              diagnostic.message
-            )
-          end,
+          prefix = '●',
         },
       }
 
@@ -230,13 +218,8 @@ return {
         },
       }
 
-      -- OPTIONAL: Pre-start TypeScript server for faster initial loading
-      vim.api.nvim_create_autocmd('VimEnter', {
-        callback = function()
-          -- Fixed name: tsserver -> ts_ls
-          vim.cmd 'LspStart ts_ls'
-        end,
-      })
+      -- NOTE: No pre-start ts_ls here — LSP auto-starts when you open TS files.
+      -- Pre-starting it on VimEnter wastes resources on non-TS projects.
     end,
   },
 }

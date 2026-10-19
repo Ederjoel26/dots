@@ -1,7 +1,7 @@
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 local opt = vim.opt
 
@@ -9,7 +9,7 @@ opt.shiftwidth = 2
 opt.tabstop = 2
 opt.softtabstop = 2
 opt.expandtab = true
-opt.laststatus = 0
+opt.laststatus = 3
 
 opt.colorcolumn = '80'
 opt.breakindent = true
