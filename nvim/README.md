@@ -9,66 +9,139 @@ list is kept short on purpose.
 
 ## Install
 
-### One command (Linux)
+### One command
+
+**Linux and macOS**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Ederjoel26/dots/main/nvim/install.sh | bash
 ```
 
-That's it. When it finishes, open a new terminal and run `nvim`.
+**Windows** (PowerShell, not as admin)
 
-Already cloned the repo? Run it from the checkout instead:
-
-```bash
-./nvim/install.sh
+```powershell
+irm https://raw.githubusercontent.com/Ederjoel26/dots/main/nvim/install.ps1 | iex
 ```
 
-Supported distros: anything with `apt` (Debian, Ubuntu, Mint, Pop!_OS),
-`dnf` (Fedora, RHEL), `pacman` (Arch, Manjaro) or `zypper` (openSUSE).
-Run it as your normal user; it asks for `sudo` only for step 1 below.
+That's it. When it finishes, open a new terminal and run `nvim`.
 
-### What the script does
+Already cloned the repo? Run it from the checkout instead: `./nvim/install.sh`
+or `.\nvim\install.ps1`.
+
+Supported systems:
+
+- **Linux**: anything with `apt` (Debian, Ubuntu, Mint, Pop!_OS), `dnf`
+  (Fedora, RHEL), `pacman` (Arch, Manjaro) or `zypper` (openSUSE). Also WSL.
+- **macOS**: Apple Silicon and Intel.
+- **Windows**: 10 (1809+) and 11, either natively or through WSL (the script
+  asks). tmux and Ghostty don't run natively on Windows, so WezTerm takes
+  their place (see below).
+
+Run it as your normal user. On Linux and macOS it asks for your password
+(`sudo`) for system packages and the first Homebrew install.
+
+### What `install.sh` does (Linux / macOS)
 
 Distro package managers often ship outdated (or missing) versions of
 Neovim, lazygit, yazi, etc. To avoid that, the script uses
 [Homebrew](https://brew.sh) for everything except the few base packages
 Homebrew itself needs.
 
-1. **System prerequisites** (via `apt`/`dnf`/`pacman`/`zypper`): compiler,
-   `make`, `git`, `curl`, `file`, `unzip`, `tar`, `fontconfig`, and clipboard
-   tools (`xclip`, `wl-clipboard`).
+1. **System prerequisites** (Linux only, via `apt`/`dnf`/`pacman`/`zypper`):
+   compiler, `make`, `git`, `curl`, `file`, `unzip`, `tar`, `fontconfig`, and
+   clipboard tools (`xclip`, `wl-clipboard`). On macOS the Homebrew installer
+   sets up the Xcode Command Line Tools.
 2. **Homebrew**: installed non-interactively if missing, and added to
    `~/.bashrc` / `~/.zshrc`.
 3. **Tools from Homebrew**:
    - Required: `neovim`, `ripgrep`, `fd`, `fzf`, `lazygit`, `node`,
      `go`, `python` (Node, Go and Python are needed by Mason to build the
      language servers and formatters).
-   - Optional: `yazi`, `tmux`, `opencode`. If one fails, only its
-     integration is affected and the install continues.
-4. **JetBrainsMono Nerd Font** into `~/.local/share/fonts` (skipped if a
-   JetBrainsMono Nerd Font is already installed).
-5. **Config**: clones the repo to `~/dots` and links `~/.config/nvim` to
-   `~/dots/nvim`. An existing `~/.config/nvim` is moved to
-   `~/.config/nvim.bak.<timestamp>`, never deleted.
+   - Optional: `yazi`, `tmux`, `opencode`, and Ghostty on macOS. If one
+     fails, only its integration is affected and the install continues.
+4. **JetBrainsMono Nerd Font**: into `~/.local/share/fonts` on Linux
+   (skipped if already installed), via Homebrew on macOS.
+5. **Config**: clones the repo to `~/dots` and symlinks `~/.config/nvim`,
+   `~/.tmux.conf` and `~/.config/ghostty/config` to it. Anything already
+   there is moved to `<path>.bak.<timestamp>`, never deleted. tmux plugins
+   are installed through tpm.
 6. **Headless bootstrap**, so the first launch is clean:
    - plugins installed at the exact versions in `lazy-lock.json`
    - Treesitter parsers compiled
    - LSP servers and formatters installed by Mason
 
-The script is idempotent: running it again updates the repo and installs
-whatever is missing.
+### What `install.ps1` does (Windows)
+
+Same idea with [Scoop](https://scoop.sh), the Windows equivalent of
+Homebrew (per user, no admin needed). Ghostty and tmux don't exist on
+Windows, so [WezTerm](https://wezterm.org) replaces them with the config in
+`wezterm/wezterm.lua`: same font, colors, padding and cursor as the Ghostty
+config.
+
+First it asks which option you want (or set `DOTS_WINDOWS_MODE`):
+
+**1) Native** (default): everything runs on Windows.
+
+1. **Scoop**, plus the `extras` and `nerd-fonts` buckets.
+2. **WezTerm** and **JetBrainsMono Nerd Font** (`JetBrainsMono-NF`).
+3. **Tools**: `neovim`, `ripgrep`, `fd`, `fzf`, `lazygit`, `nodejs-lts`, `go`,
+   `python`, `mingw` (C compiler), `make`, `7zip`, `unzip`, `pwsh`
+   (WezTerm's shell). Optional: `yazi`, `opencode`.
+4. **Config**: clones the repo to `~\dots`, links `%LOCALAPPDATA%\nvim` to
+   `~\dots\nvim` (a junction, so no Developer Mode needed; an existing config
+   is moved to `nvim.bak.<timestamp>`) and points WezTerm to its config
+   through the `WEZTERM_CONFIG_FILE` user variable.
+5. **Headless bootstrap**, same as above.
+
+WezTerm works as the multiplexer here, with the tmux keys:
+
+| Keys | Action |
+| --- | --- |
+| `C-a \|` / `C-a -` | Split side by side / top and bottom |
+| `C-a h/j/k/l` | Resize pane by 5 (keep pressing `hjkl` to repeat) |
+| `C-a m` | Zoom pane |
+| `C-a [` | Copy mode (vi keys, `v` select, `y` copy) |
+| `C-a c` / `C-a n` / `C-a p` / `C-a 1-9` | New / next / previous / go to tab |
+| `C-a x` | Close pane |
+| `C-a r` | Reload config |
+| `C-h/j/k/l` | Move between Neovim windows and WezTerm panes |
+
+Not replicated: session save/restore (tmux-resurrect + continuum), and
+`C-h/j/k/l` doesn't jump from the edge Neovim window to the next WezTerm
+pane (inside Neovim it moves between Neovim windows only). Use option 2 if
+you need those.
+
+**2) WSL**: Linux inside Windows, identical to the Linux setup.
+
+1. Checks that a WSL distro exists (if not, it tells you to run
+   `wsl --install -d Ubuntu` as admin and reboot, then re-run the script).
+2. **Scoop**, **WezTerm** and the **Nerd Font** on the Windows side.
+3. Points WezTerm to its config and sets `DOTS_WSL_DISTRO`, so WezTerm opens
+   straight into that distro and leaves `C-a` / `C-hjkl` to tmux.
+4. Runs `install.sh` inside the distro: Neovim, tmux with `.tmux.conf`,
+   plugins, everything as on Linux.
+
+Both scripts are idempotent: running them again updates the repo and
+installs whatever is missing.
 
 #### Options
+
+Both scripts read the same environment variables:
 
 | Variable          | Default                                 | Effect                          |
 | ----------------- | --------------------------------------- | ------------------------------- |
 | `DOTS_DIR`        | `~/dots`                                | Where the repo is cloned        |
 | `REPO_URL`        | `https://github.com/Ederjoel26/dots.git` | Use your own fork               |
 | `SKIP_FONT=1`     | off                                     | Don't install the Nerd Font     |
-| `SKIP_OPTIONAL=1` | off                                     | Skip `yazi`, `tmux`, `opencode` |
+| `SKIP_OPTIONAL=1` | off                                     | Skip the optional tools         |
+| `DOTS_WINDOWS_MODE` | asks                                  | Windows only: `native` or `wsl` |
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Ederjoel26/dots/main/nvim/install.sh | SKIP_FONT=1 bash
+```
+
+```powershell
+$env:SKIP_FONT = '1'; irm https://raw.githubusercontent.com/Ederjoel26/dots/main/nvim/install.ps1 | iex
 ```
 
 ### After installing
@@ -81,11 +154,23 @@ curl -fsSL https://raw.githubusercontent.com/Ederjoel26/dots/main/nvim/install.s
 
 ### Manual install
 
+Linux / macOS:
+
 ```bash
 brew install neovim ripgrep fd fzf lazygit node go python yazi tmux
 git clone https://github.com/Ederjoel26/dots.git ~/dots
 ln -s ~/dots/nvim ~/.config/nvim
 nvim   # lazy.nvim installs everything on first launch
+```
+
+Windows:
+
+```powershell
+scoop bucket add extras
+scoop install git neovim ripgrep fd fzf lazygit nodejs-lts go python mingw make 7zip unzip pwsh
+git clone https://github.com/Ederjoel26/dots.git $HOME\dots
+New-Item -ItemType Junction -Path $env:LOCALAPPDATA\nvim -Target $HOME\dots\nvim
+nvim
 ```
 
 ### Uninstall
@@ -95,6 +180,10 @@ rm ~/.config/nvim                                   # the symlink
 rm -rf ~/.local/share/nvim ~/.local/state/nvim ~/.cache/nvim
 ```
 
+On Windows: remove `%LOCALAPPDATA%\nvim` (the junction),
+`%LOCALAPPDATA%\nvim-data`, and the `WEZTERM_CONFIG_FILE` / `DOTS_WSL_DISTRO`
+user environment variables.
+
 ## Structure
 
 ```
@@ -102,7 +191,8 @@ nvim/
 ├── init.lua              # entry point: options → keymaps → lazy.nvim
 ├── lazy-lock.json        # pinned plugin versions
 ├── .stylua.toml          # Lua formatting rules
-├── install.sh            # one-command installer
+├── install.sh            # one-command installer (Linux, macOS)
+├── install.ps1           # one-command installer (Windows: native or WSL)
 └── lua/
     ├── config/
     │   ├── options.lua   # editor options
@@ -305,7 +395,7 @@ From `lua/config/options.lua`:
 - 2-space indentation, spaces instead of tabs (`guess-indent` adapts per file)
 - Relative line numbers, cursor line, ruler at column 80
 - Persistent undo (`undofile`)
-- System clipboard (`unnamedplus`, needs `xclip` or `wl-clipboard`)
+- System clipboard (`unnamedplus`; on Linux needs `xclip` or `wl-clipboard`)
 - Case-insensitive search unless you type a capital letter
 - Live preview of `:s` substitutions
 - Global statusline (`laststatus = 3`)
@@ -313,7 +403,8 @@ From `lua/config/options.lua`:
 ## Troubleshooting
 
 **`nvim: command not found` after installing.** Open a new terminal, or run
-`eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"`. Fish users must
+`eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"` (Linux) or
+`eval "$(/opt/homebrew/bin/brew shellenv)"` (macOS). Fish users must
 add Homebrew to their config manually.
 
 **Icons look like squares.** Your terminal isn't using a Nerd Font. Select
